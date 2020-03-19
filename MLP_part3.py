@@ -1,4 +1,4 @@
-from sklearn.preprocessing import MaxAbsScaler
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 from sklearn.neural_network import MLPClassifier
@@ -17,13 +17,15 @@ scaled_images = np.empty(shape = (30000, 28, 28))
 scaled_images_test = np.empty(shape=(5000, 28, 28))
 # In order to scale pixel values to [-1, 1], The MaxAbsScaler was used.
 counter = 0
+scaler = MinMaxScaler(feature_range=(-1, 1))
+
 for x in train_images_reshaped:
-    scaled_images[counter, :, :] = MaxAbsScaler().fit_transform(x)
+    scaled_images[counter, :, :] = scaler.fit_transform(x)
     counter += 1
 
 counter = 0
 for x in test_images_reshaped:
-    scaled_images_test[counter, :, :] = MaxAbsScaler().fit_transform(x)
+    scaled_images_test[counter, :, :] = scaler.fit_transform(x)
     counter += 1
 
 # In order to split 10 percent of the training data set to validation
@@ -49,10 +51,10 @@ for m in arch:
     counter_for_list = 0
 
     mlp_relu = MLPClassifier(hidden_layer_sizes=m, activation='relu',
-                            solver='adam', max_iter=1, shuffle=True, learning_rate_init=0.01)
+                            solver='sgd', max_iter=1, shuffle=True, learning_rate_init=0.01, momentum=0.0)
 
     mlp_sigmoid = MLPClassifier(hidden_layer_sizes=m, activation='logistic',
-                            solver='adam', max_iter=1, shuffle=True, learning_rate_init=0.01)
+                            solver='sgd', max_iter=1, shuffle=True, learning_rate_init=0.01, momentum=0.0)
 
     # Flatten input data
     nsamples, nx, ny = X_train.shape
@@ -74,6 +76,7 @@ for m in arch:
         # Shuffle training set after each epoch
         random_perm = np.random.permutation(X_train.shape[0])
         mini_batch_index = 0
+
         if i != 1:
             weights_relu_before = copy.deepcopy(mlp_relu.coefs_)
             weights_relu_before = weights_relu_before[0]
@@ -88,6 +91,7 @@ for m in arch:
             if mini_batch_index >= X_train.shape[0]:
                 break
 
+        # Record the parameters for every 10 steps
         if i % 10 == 0:
             weights_relu_after = mlp_relu.coefs_[0]
             weights_sigmoid_after = mlp_sigmoid.coefs_[0]
@@ -105,7 +109,7 @@ for m in arch:
     arc_dict['sigmoid_grad_curve'] = sigmoid_grad
     list_of_dict.append(arc_dict)
 
-
+# Visualization Part
 from utils import part3Plots
 part3Plots(list_of_dict, save_dir='', filename='', show_plot=True)
 
