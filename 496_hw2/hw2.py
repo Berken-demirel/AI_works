@@ -10,6 +10,7 @@ class Individual:
     def __init__(self, num_genes):
         self.Genes = self.create_genes(num_genes)
         self.Gene = self.Gene()
+
     class Gene:
         def __init__(self):
             random.seed(random.random())
@@ -24,14 +25,58 @@ class Individual:
             self.B = random.randint(0, 255)
             self.A = random.random()
 
-        def guided_mutate(self):
-            self.x = random.randint(0, self.x + 180 / 4) if self.x - 180/4 <= 0 else random.randint(self.x - 180 / 4, self.x + 180 / 4)
-            self.y = random.randint(0, self.y + 180 / 4) if self.y - 180/4 <= 0 else random.randint(self.y - 180 / 4, self.y + 180 / 4)
-            self.radius = random.randint(1, self.radius + 10) if self.radius - 10 <= 0 else random.randint(self.radius - 10, self.radius + 10)
-            self.R = random.randint(0, self.R + 64) if self.R - 64 <= 0 else random.randint(self.R - 64, self.R + 64)
-            self.G = random.randint(0, self.G + 64) if self.G - 64 <= 0 else random.randint(self.G - 64, self.G + 64)
-            self.B = random.randint(0, self.B + 64) if self.B - 64 <= 0 else random.randint(self.B - 64, self.B + 64)
-            self.A = random.uniform (0, self.A + 0.25) if self.A - 0.25 <= 0 else random.uniform(self.A - 0.25, self.A + 0.25)
+    def guided_mutate(self, guided_gene):
+        output = self.Gene
+        if guided_gene.x + 45 > 180:
+            output.x = random.randint(guided_gene.x - 45, 180)
+        elif guided_gene.x - 45 < 0:
+            output.x = random.randint(0, guided_gene.x + 45)
+        else:
+            output.x = random.randint(guided_gene.x - 45, guided_gene.x + 45)
+
+        if guided_gene.y + 45 > 180:
+            output.y = random.randint(guided_gene.y - 45, 180) if guided_gene.y - 45 < 180 else random.randint(135,180)
+        elif guided_gene.y - 45 < 0:
+            output.y = random.randint(0, guided_gene.y + 45)
+        else:
+            output.y = random.randint(guided_gene.y - 45, guided_gene.y + 45)
+
+        if guided_gene.radius + 10 > 40:
+            output.radius = random.randint(guided_gene.radius - 10, 40)
+        elif guided_gene.radius - 10 < 0:
+            output.radius = random.randint(0, guided_gene.radius + 10)
+        else:
+            output.radius = random.randint(guided_gene.radius - 10, guided_gene.radius + 10)
+
+        if guided_gene.R + 64 > 255:
+            output.R = random.randint(guided_gene.R - 64, 255)
+        elif guided_gene.R - 64 < 0:
+            output.R = random.randint(0, guided_gene.R + 64)
+        else:
+            output.R = random.randint(guided_gene.R - 64, guided_gene.R + 64)
+
+        if guided_gene.G + 64 > 255:
+            output.G = random.randint(guided_gene.G - 64, 255)
+        elif guided_gene.G - 64 < 0:
+            output.G = random.randint(0, guided_gene.G + 64)
+        else:
+            output.G = random.randint(guided_gene.G - 64, guided_gene.G + 64)
+
+        if guided_gene.B + 64 > 255:
+            output.B = random.randint(guided_gene.B - 64, 255)
+        elif guided_gene.B - 64 < 0:
+            output.B = random.randint(0, guided_gene.B + 64)
+        else:
+            output.B = random.randint(guided_gene.B - 64, guided_gene.B + 64)
+
+        if guided_gene.A + 0.25 > 1:
+            output.A = random.uniform(guided_gene.A - 0.25, 1)
+        elif guided_gene.A - 0.25 < 0:
+            output.A = random.uniform(0, guided_gene.A + 0.25)
+        else:
+            output.A = random.uniform(guided_gene.A - 0.25, guided_gene.A + 0.25)
+
+        return output
 
     def create_genes(self, num_genes):
         genes = {}
@@ -98,7 +143,8 @@ class Individual:
             new_gene = self.Gene
             self.Genes[selected_gene] = new_gene
         else:
-            self.Genes[selected_gene].guided_mutate()
+            new_gene = self.guided_mutate(self.Genes[selected_gene])
+            self.Genes[selected_gene] = new_gene
 
 
 def initialize_population(num_inds=20, num_genes=50):
@@ -185,21 +231,23 @@ def crossover(fitness, population, frac_parents=0.6):
 def mutation(individuals, mutation_prob, mutation_type):
     number_individuals = len(individuals)
     counter = 0
+    output = []
     while counter != number_individuals:
         processed_individual = individuals[counter]
         if random.random() < mutation_prob:
             processed_individual.do_mutation(mutation_type)
-            individuals[counter] = processed_individual
-        counter += 1
 
+        output.append(processed_individual)
+        counter += 1
+    return output
 
 source_image = cv2.imread("painting.png")
 
 population = initialize_population(num_inds=20, num_genes=50)
 
-num_generations = 100001
+num_generations = 10001
 i = 0
-fitness_plot = np.zeros(100)
+fitness_plot = np.zeros(11)
 while i != num_generations:
     Fitness_of_individuals = np.zeros(len(population))
     counter = 0
@@ -227,8 +275,13 @@ while i != num_generations:
     childs, old_population = crossover(other_fitness, other_population, frac_parents=0.6)
     # Mutation
     mutation_population = childs + old_population
-    mutation(mutation_population, mutation_prob=0.2, mutation_type=0)
+    mutated_population = mutation(mutation_population, mutation_prob=0.2, mutation_type=1)
     # New Population
-    new_population = best_population + mutation_population
-    population = new_population
+    population = best_population + mutated_population
     i += 1
+
+import matplotlib.pyplot as plt
+
+plt.ylabel("Fitness score")
+plt.xlabel("Steps")
+plt.plot(fitness_plot)
