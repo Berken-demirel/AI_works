@@ -17,16 +17,16 @@ def init_ldpc_graph(H, y, theta):
     and binomial noise parameter 1-theta.
     '''
     G = SimpleFactorGraph()
-    z = channel_noise(y, 1-theta)
-    comparison = z == y
-    value = np.zeros((len(y),1))
-    counter = 0
-    for k in comparison:
-        if k:
-            value[counter,0] = theta
-        else:
-            value[counter,0] = 1-theta
-        counter = counter + 1
+    # z = channel_noise(y, 1-theta)
+    # comparison = z == y
+    # value = np.zeros((len(y),1))
+    # counter = 0
+    # for k in comparison:
+    #     if k:
+    #         value[counter,0] = theta
+    #     else:
+    #         value[counter,0] = 1-theta
+    #     counter = counter + 1
     # Create variables for each column of H matrix
     list_2_add_nodes_from = []
     str1 = 'X'
@@ -57,11 +57,11 @@ def init_ldpc_graph(H, y, theta):
     # Create unary factors
     for i in range(len(list_2_add_nodes_from)):
         if y[i] == 1:
-            factor_list_unary.append(FastDiscreteFactor([list_2_add_nodes_from[i]], [2], np.array([1-value[i], value[i]])))
-            G.add_factors(FastDiscreteFactor([list_2_add_nodes_from[i]], [2], np.array([1-value[i], value[i]])))
+            factor_list_unary.append(FastDiscreteFactor([list_2_add_nodes_from[i]], [2], np.array([1-theta, theta])))
+            G.add_factors(FastDiscreteFactor([list_2_add_nodes_from[i]], [2], np.array([1-theta, theta])))
         else:
-            factor_list_unary.append(FastDiscreteFactor([list_2_add_nodes_from[i]], [2], np.array([value[i], 1-value[i]])))
-            G.add_factors(FastDiscreteFactor([list_2_add_nodes_from[i]], [2], np.array([value[i], 1-value[i]])))
+            factor_list_unary.append(FastDiscreteFactor([list_2_add_nodes_from[i]], [2], np.array([theta, 1-theta])))
+            G.add_factors(FastDiscreteFactor([list_2_add_nodes_from[i]], [2], np.array([theta, 1-theta])))
         G.add_edges_from([(list_2_add_nodes_from[i], factor_list_unary[i])])
 
     G.add_nodes_from(factor_list_unary)

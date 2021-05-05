@@ -198,7 +198,7 @@ for m in range(num_runs):
     plt.title('Channel Noise ' + str(noise))
 
 # TODO: use modified code from 1c
-    
+
 ## QUESTION 1e #######################
 
 print('Question 1e')
@@ -223,26 +223,26 @@ if iters < max_iters:
     print('Parallel LBP converged in', iters, 'iterations.')
 else:
     print('Parallel LBP did not converge. Terminated at', max_iters, 'iterations')
-    
+
 plotAtIters = [ 0, 1, 2, 3, 5, 10, 20, 30 ]
 plt.figure(5)
 fig,axs = plt.subplots(2,4,constrained_layout=True,subplot_kw={'xticks': [], 'yticks': []})
 for index in range(len(plotAtIters)):
     i = plotAtIters[index]
-    
+
     if i == 0:
         thisX = noisyCodeWord
     elif i >= len(nodeMarg_par):
         thisX = estimate_code(nodeMarg_par[-1])
     else:
         thisX = estimate_code(nodeMarg_par[i])
-    
+
     msg = np.reshape(thisX[:1600], [40,40])
     par = np.reshape(thisX[1600:], [40,40])
     im = np.vstack([msg,par])
     axs.flat[index].imshow(im, cmap = 'gray')
     axs.flat[index].set_xlabel('Iter '+str(i))
-    
+
 
 ## QUESTION 1f #######################
 print('Question 1f')
@@ -276,7 +276,7 @@ for index in range(len(plotAtIters)):
 
     if i == 0:
         thisX = noisyCodeWord
-    elif i > len(nodeMarg_par):
+    elif i >= len(nodeMarg_par):
         thisX = estimate_code(nodeMarg_par[-1])
     else:
         thisX = estimate_code(nodeMarg_par[i])
@@ -286,6 +286,9 @@ for index in range(len(plotAtIters)):
     im = np.vstack([msg, par])
     axs.flat[index].imshow(im, cmap='gray')
     axs.flat[index].set_xlabel('Iter ' + str(i))
+
+
+print('a')
 
 
 
